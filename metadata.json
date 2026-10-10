@@ -1,0 +1,6 @@
+{
+  "name": "QuestFormat - Exam Paper & PDF Generator",
+  "description": "Create math and science MCQ exam question papers with LaTeX equation support, custom institute headers, and downloadable PDFs with red-highlighted answer keys matching your uploaded institute format.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
