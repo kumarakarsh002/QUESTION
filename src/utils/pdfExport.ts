@@ -9,6 +9,7 @@ export interface ExportPdfOptions {
 export interface ExportResult {
   success: boolean;
   blobUrl: string;
+  dataUri: string;
   fileName: string;
   pageImages: string[];
 }
@@ -43,8 +44,8 @@ export async function downloadExamPaperPdf(
   const pageImages: string[] = [];
 
   try {
-    // Wait for repaint after zoom reset
-    await new Promise((r) => setTimeout(r, 100));
+    // Wait for layout to settle
+    await new Promise((r) => setTimeout(r, 80));
 
     // Standard A4 dimensions in mm: 210 x 297
     const pdf = new jsPDF({
@@ -64,6 +65,8 @@ export async function downloadExamPaperPdf(
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
+        // Ignore mathml spans that can break html2canvas in certain browsers
+        ignoreElements: (el) => el.classList?.contains('katex-mathml'),
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.96);
@@ -81,15 +84,15 @@ export async function downloadExamPaperPdf(
 
     const blob = pdf.output('blob');
     const blobUrl = URL.createObjectURL(blob);
+    const dataUri = pdf.output('datauristring');
 
-    // Primary: Call jsPDF's built-in file saver
+    // Trigger direct browser download
     try {
       pdf.save(fileName);
     } catch (saveErr) {
-      console.warn('pdf.save encountered browser sandbox, using blob trigger:', saveErr);
+      console.warn('pdf.save encountered browser sandbox, falling back to link download:', saveErr);
     }
 
-    // Secondary: Direct anchor download link
     try {
       const downloadLink = document.createElement('a');
       downloadLink.href = blobUrl;
@@ -110,6 +113,7 @@ export async function downloadExamPaperPdf(
     return {
       success: true,
       blobUrl,
+      dataUri,
       fileName,
       pageImages,
     };
@@ -126,5 +130,9 @@ export async function downloadExamPaperPdf(
  * Triggers browser print dialog for vector PDF output
  */
 export function printExamPaper(): void {
-  window.print();
+  try {
+    window.print();
+  } catch (e) {
+    console.warn('Direct print blocked by sandbox:', e);
+  }
 }

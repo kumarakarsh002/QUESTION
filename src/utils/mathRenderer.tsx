@@ -31,6 +31,7 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
         const html = katex.renderToString(content, {
           displayMode: isBlock,
           throwOnError: false,
+          output: 'html', // Avoids MathML tags that break html2canvas
         });
         return (
           <span
@@ -75,6 +76,7 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
         const html = katex.renderToString(formula, {
           displayMode: isDisplayMode,
           throwOnError: false,
+          output: 'html', // Avoids MathML tags that break html2canvas
         });
         tokens.push(
           <span

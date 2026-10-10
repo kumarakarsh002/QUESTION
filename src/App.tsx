@@ -55,6 +55,7 @@ export default function App() {
   // Download ready modal state
   const [downloadReady, setDownloadReady] = useState<{
     blobUrl: string;
+    dataUri?: string;
     fileName: string;
     pageImages?: string[];
   } | null>(null);
@@ -197,10 +198,11 @@ export default function App() {
       });
       setDownloadReady({
         blobUrl: result.blobUrl,
+        dataUri: result.dataUri,
         fileName: result.fileName,
         pageImages: result.pageImages,
       });
-      showToast('PDF downloaded successfully!');
+      showToast('PDF compiled successfully! Click Save below.');
     } catch (err: any) {
       console.error('PDF export issue:', err);
       showToast('PDF export error: ' + (err?.message || 'Please check questions'));
@@ -587,36 +589,50 @@ export default function App() {
               </p>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2.5 pt-1">
               {/* Option 1: Direct Save PDF to Computer */}
               <a
                 href={downloadReady.blobUrl}
                 download={downloadReady.fileName}
                 onClick={() => {
-                  showToast('Saving PDF file to your device...');
+                  showToast('Saving PDF file to your computer...');
                 }}
                 className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold text-sm rounded-xl shadow-md shadow-blue-500/20 inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4 stroke-[2.5]" /> Save PDF to Your Computer (.pdf)
               </a>
 
-              {/* Option 2: Open in New Browser Tab */}
+              {/* Option 2: Fallback Data-URI PDF Download */}
+              {downloadReady.dataUri && (
+                <a
+                  href={downloadReady.dataUri}
+                  download={downloadReady.fileName}
+                  onClick={() => {
+                    showToast('Downloading PDF file...');
+                  }}
+                  className="w-full py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-semibold text-xs rounded-xl border border-indigo-200 inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-indigo-600" /> Direct Data-URL Download (.pdf)
+                </a>
+              )}
+
+              {/* Option 3: Open in New Browser Tab */}
               <a
                 href={downloadReady.blobUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-2.5 px-4 bg-sky-50 hover:bg-sky-100 text-sky-900 font-semibold text-xs rounded-xl border border-sky-200 inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                <ExternalLink className="w-4 h-4" /> Open PDF in New Tab to View / Save
+                <ExternalLink className="w-4 h-4" /> Open PDF in New Tab
               </a>
 
-              {/* Option 3: Browser Print dialog */}
+              {/* Option 4: Browser Print dialog */}
               <button
                 type="button"
                 onClick={handlePrint}
                 className="w-full py-2 px-4 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs rounded-xl inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
-                <Printer className="w-4 h-4" /> Print / Save via Browser Dialog (Ctrl + P)
+                <Printer className="w-4 h-4" /> Print via Browser Dialog (Ctrl + P)
               </button>
             </div>
 
